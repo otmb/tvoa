@@ -1,1 +1,0 @@
-/Users/manabu/Documents/Titanium Studio Workspace/tvoa/Resources/ui/handheld/ApplicationWindow.js
