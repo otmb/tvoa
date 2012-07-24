@@ -218,27 +218,30 @@
               console.log("pb max: "+ sound.duration);
               */
             }
-            var i = setInterval(function()
-            {
-              if (sound.playing)
+            if (Ti.Platform.osname === 'iphone'){
+              var i = setInterval(function()
               {
-                //Ti.API.info('time ' + sound.getTime());
-                if (Ti.Platform.osname === 'iphone'){
-                  slider.value = sound.getTime();
-                } else {
-                  // micro sec
-                  //pb.value = sound.getTime();
-                  //pb.value = Math.round(sound.getTime() / sound.getDuration()*1000)/1000;
-                  //console.log(pb.value);
+                if (sound.playing)
+                {
+                  //Ti.API.info('time ' + sound.getTime());
+                  if (Ti.Platform.osname === 'iphone'){
+                    slider.value = sound.getTime();
+                  } else {
+                    // micro sec
+                    //pb.value = sound.getTime();
+                    //pb.value = Math.round(sound.getTime() / sound.getDuration()*1000)/1000;
+                    //console.log(pb.value);
+                  }
                 }
-              }
-            },500);
+              },500);
+            }
             detailWin.addEventListener('close',function() {
               sound.stop();
-              clearInterval(i);
               if (Ti.Platform.osname === 'android')
               {
                 sound.release();
+              } else {
+                clearInterval(i);
               }
             });
         }
