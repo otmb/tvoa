@@ -6,7 +6,7 @@
     
     var tabGroup = Ti.UI.createTabGroup();
     
-    var tab1 = app.ui.createRssTab('VOA', 'http://learningenglish.voanews.com/rss/?count=50');
+    var tab1 = app.ui.createRssTab('Titanium VOA RSS', 'http://learningenglish.voanews.com/rss/?count=50');
     //var tab2 = app.ui.createRssTab('Q&A', 'http://developer.appcelerator.com/questions/feed/newest');
     
     tabGroup.addTab(tab1);
@@ -18,19 +18,19 @@
       title: _title,
       backgroundColor: '#fff'
     });
-    
+    if (Ti.Platform.osname === 'android'){
+      var icon ;
+    } else {
+      var icon = Titanium.UI.iPhone.SystemIcon.DOWNLOADS;
+    }
     var tab = Ti.UI.createTab({
       title: _title,
-      //icon: 'KS_nav_views.png',
+      icon: icon,
       window: win
     });
    
     var tableView = Ti.UI.createTableView({
-      data: [
-        //{title:"Foo", link: "http://yahoo.co.jp" ,color: "#000", hasDetail: true},
-        //{title:"Bar", link: "http://google.co.jp" ,color: "#000", hasDetail: true},
-        //{title:"Hoge", link: "http://twitter.jp" ,color: "#000", hasDetail: true}
-      ]
+      data: []
     });
     win.add(tableView);
     
@@ -233,7 +233,7 @@
                 }
               }
             },500);
-            win.addEventListener('close',function() {
+            detailWin.addEventListener('close',function() {
               sound.stop();
               clearInterval(i);
               if (Ti.Platform.osname === 'android')
@@ -241,35 +241,10 @@
                 sound.release();
               }
             });
-            
-            //win.leftNavButton = backBtn;
-            //Ti.UI.currentWindow.leftNavButton.addEventListener('click', function(e){
-            /*
-            tab.leftNavButton.addEventListener('click', function() {
-              console.log(1);
-              sound.pause();
-              sound.stop();
-              clearInterval(i);
-              if (Ti.Platform.osname === 'android')
-              {
-                sound.release();
-              }
-            });
-            */
         }
         mp3.send();
       });
-      //Ti.UI.currentWindow.addEventListener("click", function(){
-      //  console.log(2);
-      //});
-      /*
-      view1.addEventListener('blur', function(e){
-        console.log(1);
-      });
-      view1.addEventListener('focus', function(e){
-        console.log(1);
-      });
-      */
+      
       var scrollView = Titanium.UI.createScrollableView({
         views: [view1,view2],
         showPagingControl: true,
