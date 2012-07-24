@@ -10,10 +10,25 @@
  */
 
 //bootstrap and check dependencies
+/*
 if (Ti.version < 1.8 ) {
 	alert('Sorry - this application template requires Titanium Mobile SDK 1.8 or later');	  	
 }
+*/
+var app = {};
 
+Ti.include("ui/ui.js");
+
+var console = {
+  log: function(msg) {
+    Ti.API.debug(JSON.stringify(msg, null, 2));
+  }
+};
+
+var tabGroup = app.ui.createApplicationTabGroup();
+tabGroup.open();
+
+/*
 // This is a single context application with mutliple windows in a stack
 (function() {
 	//determine platform and form factor and render approproate components
@@ -42,3 +57,4 @@ if (Ti.version < 1.8 ) {
 	}
 	new Window().open();
 })();
+*/

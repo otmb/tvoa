@@ -41,6 +41,9 @@
             <orientation>Ti.UI.LANDSCAPE_LEFT</orientation>
             <orientation>Ti.UI.LANDSCAPE_RIGHT</orientation>
         </orientations>
+        <backgroundModes>
+          <mode>audio</mode>
+         </backgroundModes>
     </iphone>
     <android xmlns:android="http://schemas.android.com/apk/res/android"/>
     <mobileweb>
