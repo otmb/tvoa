@@ -1,90 +1,80 @@
 (function(){
-	app.ui = {};
-	
-	app.ui.createApplicationTabGroup = function(){
-		Ti.UI.setBackgroundColor('#000');
-		
-		var tabGroup = Ti.UI.createTabGroup();
-		
-		var tab1 = app.ui.createRssTab('VOA', 'http://learningenglish.voanews.com/rss/?count=50');
-		//var tab2 = app.ui.createRssTab('Q&A', 'http://developer.appcelerator.com/questions/feed/newest');
-		
-		tabGroup.addTab(tab1);
-		//tabGroup.addTab(tab2);
-		/*
-		var tran = Ti.Network.createHTTPClient();
-        tran.open('GET',link);
-        tran.onload  = function() {
-          var text = this.responseText;
-          console.log(text);
-		    });
-		    tran.send();
-		*/
-		return tabGroup;
-	};
-	
-	app.ui.createRssTab = function(/* string */ _title, /* string */ _url) {
-		var win = Ti.UI.createWindow({
-			title: _title,
-			backgroundColor: '#fff'
-		});
-		
-		var tab = Ti.UI.createTab({
-			title: _title,
-			//icon: 'KS_nav_views.png',
-			window: win
-		});
+  app.ui = {};
+  
+  app.ui.createApplicationTabGroup = function(){
+    Ti.UI.setBackgroundColor('#000');
+    
+    var tabGroup = Ti.UI.createTabGroup();
+    
+    var tab1 = app.ui.createRssTab('VOA', 'http://learningenglish.voanews.com/rss/?count=50');
+    //var tab2 = app.ui.createRssTab('Q&A', 'http://developer.appcelerator.com/questions/feed/newest');
+    
+    tabGroup.addTab(tab1);
+    return tabGroup;
+  };
+  
+  app.ui.createRssTab = function(/* string */ _title, /* string */ _url) {
+    var win = Ti.UI.createWindow({
+      title: _title,
+      backgroundColor: '#fff'
+    });
+    
+    var tab = Ti.UI.createTab({
+      title: _title,
+      //icon: 'KS_nav_views.png',
+      window: win
+    });
    
-		var tableView = Ti.UI.createTableView({
-			data: [
-				//{title:"Foo", link: "http://yahoo.co.jp" ,color: "#000", hasDetail: true},
-				//{title:"Bar", link: "http://google.co.jp" ,color: "#000", hasDetail: true},
-				//{title:"Hoge", link: "http://twitter.jp" ,color: "#000", hasDetail: true}
-			]
-		});
-		win.add(tableView);
-		
-		// Rss Read
-		win.addEventListener('open', function(){
-			var query = String.format("select * from rss where url = '%s'",_url);
-			Ti.Yahoo.yql(query,function(response){
-				if (response.success === false){
-					alert("Yahoo YQL error.");
-					return;
-				}
-				response.data.item.forEach(function(item){
-		      var link = item.link.match(/[0-9]+.html$/);
-		      link = 'http://m.voanews.com/learningenglish/' + link + '?show=full';
+    var tableView = Ti.UI.createTableView({
+      data: [
+        //{title:"Foo", link: "http://yahoo.co.jp" ,color: "#000", hasDetail: true},
+        //{title:"Bar", link: "http://google.co.jp" ,color: "#000", hasDetail: true},
+        //{title:"Hoge", link: "http://twitter.jp" ,color: "#000", hasDetail: true}
+      ]
+    });
+    win.add(tableView);
+    
+    // Rss Read
+    win.addEventListener('open', function(){
+      var query = String.format("select * from rss where url = '%s'",_url);
+      Ti.Yahoo.yql(query,function(response){
+        if (response.success === false){
+          alert("Yahoo YQL error.");
+          return;
+        }
+        response.data.item.forEach(function(item){
+          var link = item.link.match(/[0-9]+.html$/);
+          link = 'http://m.voanews.com/learningenglish/' + link + '?show=full';
           tableView.appendRow({title: item.title, color: '#000', link: link, hasChild: true});
-				});
-			});
-		});
-		
-		// List View Create
-		tableView.addEventListener("click",function(evt){
-			
-			// before sound remove
-			var sound = app.ui.sound;
+        });
+      });
+    });
+    
+    // List View Create
+    tableView.addEventListener("click",function(evt){
+      
+      // before sound remove
+      var sound = app.ui.sound;
       if (sound){
         sound.stop();
       }
       
-			var view1 = Ti.UI.createView({
+      var view1 = Ti.UI.createView({
         //backgroundColor: 'red'
       });
       
       var view2 = Ti.UI.createView({
         //backgroundColor: 'blue'
       });
-			
-			//alert(event.rowData.title);
-			var detailWin = Ti.UI.createWindow({
-				title: evt.rowData.title,
-				backgroundColor: "#fff"
-			});
-			
-			// text download
-		  var xpath = '//p[@class="article_body_text"]';
+      
+      //alert(event.rowData.title);
+      var detailWin = Ti.UI.createWindow({
+        title: evt.rowData.title,
+        backgroundColor: "#fff"
+      });
+      
+      // text download
+      var xpath = '//p[@class="article_body_text"]';
       var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
       //console.log(query);
       Ti.Yahoo.yql(query,function(response){
@@ -280,18 +270,18 @@
         console.log(1);
       });
       */
-			var scrollView = Titanium.UI.createScrollableView({
-				views: [view1,view2],
-				showPagingControl: true,
-				pagingControlHeight: 30,
-				maxZoomScale: 2.0
-			});
-			detailWin.add(scrollView);
+      var scrollView = Titanium.UI.createScrollableView({
+        views: [view1,view2],
+        showPagingControl: true,
+        pagingControlHeight: 30,
+        maxZoomScale: 2.0
+      });
+      detailWin.add(scrollView);
       
-			tab.open(detailWin);
-			
-		});
-		
-		return tab;
-	};
+      tab.open(detailWin);
+      
+    });
+    
+    return tab;
+  };
 })();
