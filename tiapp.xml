@@ -21,7 +21,7 @@
     <url>http://d.hatena.ne.jp/o2mana</url>
     <description>Titanium Voice of America English News</description>
     <copyright>2012 by manabu</copyright>
-    <icon>appicon.png</icon>
+    <icon>Icon.png</icon>
     <persistent-wifi>false</persistent-wifi>
     <prerendered-icon>false</prerendered-icon>
     <statusbar-style>default</statusbar-style>

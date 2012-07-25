@@ -17,7 +17,11 @@ if (Ti.version < 1.8 ) {
 */
 var app = {};
 
-Ti.include("ui/ui.js");
+Ti.include(
+  //"app/util.js",
+  "app/ui/ui.js",
+  "app/model/rss.js"
+);
 
 var console = {
   log: function(msg) {
