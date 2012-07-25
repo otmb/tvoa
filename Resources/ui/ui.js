@@ -57,6 +57,25 @@
       app.ui.url = evt.rowData.link;
       // before sound remove
       var sound = app.ui.sound;
+      
+      if (Ti.Platform.osname === 'iphone'){
+        var slider = Ti.UI.createSlider({
+          top: 50,
+          min: 0,
+          //max: 100,
+          width: '90%'
+        });
+      } else {
+        var slider = Titanium.UI.createProgressBar({
+          top: 50,
+          width:"90%",
+          height:'auto',
+          min:0,
+          //touchEnabled: true,
+          style:Ti.UI.iPhone.ProgressBarStyle.PLAIN
+        });
+      }
+      
       if (sound){
         sound.stop();
       }
@@ -84,6 +103,7 @@
           alert("Yahoo YQL error.");
           return;
         }
+        // text scroll view add
         var contents = response.data.p.content;
         contents = contents.replace(/  /g,"");
         contents = contents.replace(/\n\n/g,"\n");
@@ -92,11 +112,16 @@
         var scrollView = Titanium.UI.createScrollView({
           contentWidth:'auto',
           contentHeight:'auto',
-          top:80,
           bottom: 0,
           showVerticalScrollIndicator:true,
           showHorizontalScrollIndicator:true
         });
+        if (Ti.Platform.osname === 'iphone')
+        {
+          scrollView.top = 80;
+        } else {
+          scrollView.top = 120;
+        }
         
         var l1 = Titanium.UI.createLabel({
           text: text,
@@ -127,106 +152,53 @@
         });
         
         view1.add(startStopButton);
-        // test
-        //sound.setTime(100);
-        
+        var i;
         startStopButton.addEventListener("click",function() {
           if (sound.playing){
-            //console.log("paused");
             sound.pause();
-            //if (Ti.Platform.osname === 'android'){
-            //  sound.release();
-            //}
           } else {
-            //console.log("played");
             sound.play();
+            slider.max = sound.duration;
+            slider.value = sound.getTime();
+            i  = setInterval(function()
+            {
+              if (sound.playing)
+              {
+                slider.value = sound.getTime();
+              }
+            },500);
           }
         });
         
         sound.addEventListener('complete', function()
         {
+          sound.stop();
+          clearInterval(i);
+          /*
           if (Ti.Platform.osname === 'android')
           {
             sound.release();
           }
-        });
-        
-        if (Ti.Platform.osname === 'iphone'){
-          var slider = Ti.UI.createSlider({
-            top: 50,
-            min: 0,
-            //max: 100,
-            width: '90%',
-          });
-          
-          var label = Ti.UI.createLabel({
-            text: slider.value,
-            width: '100%',
-            height: 'auto',
-            top: 30,
-            left: 0,
-            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
-          });
-          
-          // slider plus minus 2 change
-          slider.addEventListener('change', function(e) {
-             
-            if (e.value > sound.getTime() + 2 || e.value < sound.getTime() - 2 ){
-              //slider.value = e.value;
-              sound.setTime(e.value);
-              console.log("slide: " + e.value);
-              console.log("sound: " + sound.getTime());
-            }
-          });
-        
-          slider.max = sound.getDuration();
-          slider.value = sound.getTime();
-          view1.add(slider);
-          
-        } else { // android progress
-          /*
-          var pb=Titanium.UI.createProgressBar({
-            top: 50,
-            width:"100%",
-            height:'auto',
-            min:0,
-            max: sound.duration,
-            //color:'#fff',
-            //message:'Downloading 0 of 10',
-            //font:{fontSize:14, fontWeight:'bold'},
-            style:Ti.UI.iPhone.ProgressBarStyle.PLAIN,
-          });
-          //pb.max = sound.getDuration();
-          //pb.value = Math.round(sound.getTime() / sound.getDuration()*1000)/1000;
-          view1.add(pb);
-          pb.show();
-          console.log("pb max: "+ sound.duration);
           */
-        }
+        });
         if (Ti.Platform.osname === 'iphone'){
-          var i = setInterval(function()
-          {
-            if (sound.playing)
-            {
-              //Ti.API.info('time ' + sound.getTime());
-              if (Ti.Platform.osname === 'iphone'){
-                slider.value = sound.getTime();
-              } else {
-                // micro sec
-                //pb.value = sound.getTime();
-                //pb.value = Math.round(sound.getTime() / sound.getDuration()*1000)/1000;
-                //console.log(pb.value);
-              }
+           slider.addEventListener('change', function(e) {
+            if (e.value > sound.getTime() + 2 || e.value < sound.getTime() - 2 ){
+              //sound.value = e.value;
+              sound.setTime(e.value);
+              //console.log("slide: " + e.value);
+              //console.log("sound: " + sound.getTime());
             }
-          },500);
+          });
         }
+        view1.add(slider);
+        
         detailWin.addEventListener('close',function() {
           sound.stop();
+          clearInterval(i);
           if (Ti.Platform.osname === 'android')
           {
             sound.release();
-          } else {
-            clearInterval(i);
           }
         });
       };
@@ -280,7 +252,7 @@
           var webview = Titanium.UI.createWebView();
           //webview.url = "http://translate.google.co.jp/translate?twu=1&sl=en&tl=ja&hl=ja&sc=1&q=" 
           //webview.url = "http://translate.google.co.jp/#en|ja|" 
-          webview.url = "http://translate.google.co.jp/translate?twu=1&q=hello?sl=en&tl=ja&u="
+          webview.url = "http://translate.google.co.jp/translate?twu=1&sl=en&tl=ja&u="
             + encodeURIComponent(app.ui.url);
           webview.scalesPageToFit = true;
           webview.width = "100%";
