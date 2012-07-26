@@ -58,10 +58,11 @@
       title: _title,
       backgroundColor: '#fff',
     });
+    var icon;
     if (Ti.Platform.osname === 'android'){
-      var icon ;
+     
     } else {
-      var icon = Titanium.UI.iPhone.SystemIcon.DOWNLOADS;
+      //var icon = Titanium.UI.iPhone.SystemIcon.DOWNLOADS;
     }
     var tab = Ti.UI.createTab({
       title: _title,
@@ -153,7 +154,7 @@
         textScroll(rss.body);
       } else {
         // text download
-        var xpath = '//p[@class="article_body_text"]';
+        var xpath = '//div[@class="body_text"]';
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         //console.log(query);
         Ti.Yahoo.yql(query,function(response){
@@ -162,7 +163,8 @@
             return;
           }
           // text scroll view add
-          var contents = response.data.p.content;
+          //console.log(response);
+          var contents = response.data.div.p.content;
           contents = contents.replace(/  /g,"");
           contents = contents.replace(/\n\n/g,"\n");
           //console.log(contents);
@@ -240,7 +242,7 @@
       };
       
       // mp3 download
-      var imageDir;
+      var soundDir;
       
       if (Ti.Platform.osname === 'android'){
         soundDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'sound');
@@ -271,7 +273,7 @@
         view1.add(pb);
         pb.show();
         
-        var xpath = '//a[contains(text(), \"Listen to this article\")]/@href';
+        var xpath = '//a[contains(text(), \"Listen\")]/@href';
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         Ti.Yahoo.yql(query,function(response){
           if (response.success === false){
