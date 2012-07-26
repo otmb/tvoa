@@ -277,7 +277,7 @@
         view1.add(pb);
         pb.show();
         
-        var xpath = '//a[contains(text(), \"Listen\")]/@href';
+        var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         Ti.Yahoo.yql(query,function(response){
           if (response.success === false){
@@ -285,7 +285,7 @@
             alert("Page Loading Error.");
             return;
           }
-          //console.log(evt.rowData.link);
+          console.log(evt.rowData.link);
           
           var link = response.data.a.href;
           var mp3 = Ti.Network.createHTTPClient({
