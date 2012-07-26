@@ -115,7 +115,6 @@
     if (!category.rowCount){
       return;
     }
-    console.log(category.rowCount);
     
     var soundDir;
       
