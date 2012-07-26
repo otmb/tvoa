@@ -6,10 +6,10 @@
   db.close();
   
   // 
-  app.rss.getAll = function(){
+  app.rss.getAll = function(category){
     var rss = [];
     var db = Ti.Database.open("tvoa");
-    var rows = db.execute('SELECT id, link, title, category, read, download, pubdate, created_at FROM rss');
+    var rows = db.execute('SELECT id, link, title, category, read, download, pubdate, created_at FROM rss where category = ? order by pubdate desc limit 50',category);
     if (!rows){
       return rss;
     }

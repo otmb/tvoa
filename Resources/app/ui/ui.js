@@ -6,17 +6,58 @@
     
     var tabGroup = Ti.UI.createTabGroup();
     
-    var tab1 = app.ui.createRssTab('Titanium VOA RSS', 'http://learningenglish.voanews.com/rss/?count=50');
-    //var tab2 = app.ui.createRssTab('Q&A', 'http://developer.appcelerator.com/questions/feed/newest');
+    //var tab1 = app.ui.createRssTab('All Zone' ,''         ,'http://learningenglish.voanews.com/rss/?count=50');
+    var tab1 = app.ui.createRssTab('World'    ,'World'    ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=957');
+    var tab2 = app.ui.createRssTab('USA'      ,'USA'      ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=958');
+    var tab3 = app.ui.createRssTab('Business' ,'Business' ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=956');
+    var tab4 = app.ui.createRssTab('Education','Education','http://learningenglish.voanews.com/rss/?count=50&zoneid=959');
+    var tab5 = app.ui.createRssTab('Health'   ,'Health'   ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=955');
     
+    //var tab2 = app.ui.createRssTab('Q&A', 'http://developer.appcelerator.com/questions/feed/newest');
     tabGroup.addTab(tab1);
+    tabGroup.addTab(tab2);
+    tabGroup.addTab(tab3);
+    tabGroup.addTab(tab4);
+    tabGroup.addTab(tab5);
+    //tabGroup.addTab(tab6);
     return tabGroup;
   };
   
-  app.ui.createRssTab = function(/* string */ _title, /* string */ _url) {
+  // Rss Read
+  app.ui.getRss = function(_url,_category,tableView){
+    
+    var query = String.format("select * from rss where url = '%s'",_url);
+    Ti.Yahoo.yql(query,function(response){
+      if (response.success === false){
+        // get rss with database
+        var data = app.rss.getAll(_category);
+        tableView.setData(data);
+        if (!data){
+          alert("RSS Loading Error.");
+        }
+        return;
+      }
+      response.data.item.forEach(function(item){
+        var pageid = item.link.match(/[0-9]+.html$/)[0];
+        link = 'http://m.voanews.com/learningenglish/' + pageid + '?show=full';
+        pageid = pageid.match(/[0-9]+/)[0];
+        var pubdate = (new Date(item.pubDate)).getTime();
+        var hash = {title: item.title, link: link, color: '#000', pageid: pageid, pubdate: pubdate, category: _category, hasChild: true};
+        //tableView.appendRow(hash);
+        
+        if (pageid && !app.rss.get(pageid)){
+          app.rss.add(hash);
+        }
+      });
+      var data = app.rss.getAll(_category);
+      tableView.setData(data);
+    });
+  };
+  
+  app.ui.createRssTab = function(_title, _category , _url ) {
     var win = Ti.UI.createWindow({
       title: _title,
-      backgroundColor: '#fff'
+      backgroundColor: '#fff',
     });
     if (Ti.Platform.osname === 'android'){
       var icon ;
@@ -28,40 +69,13 @@
       icon: icon,
       window: win
     });
-   
-    // Rss Read
-    getRss = function(){
-      var query = String.format("select * from rss where url = '%s'",_url);
-      Ti.Yahoo.yql(query,function(response){
-        if (response.success === false){
-          alert("RSS Loading Error.");
-          return;
-        }
-        response.data.item.forEach(function(item){
-          var pageid = item.link.match(/[0-9]+.html$/)[0];
-          link = 'http://m.voanews.com/learningenglish/' + pageid + '?show=full';
-          pageid = pageid.match(/[0-9]+/)[0];
-          var pubdate = (new Date(item.pubDate)).getTime();
-          var hash = {title: item.title, link: link, color: '#000', pageid: pageid, pubdate: pubdate, category: item.category, hasChild: true};
-          tableView.appendRow(hash);
-          
-          if (pageid && !app.rss.get(pageid)){
-            app.rss.add(hash);
-          }
-        });
-      });
-    };
     
-    // get rss with database
-    var data = app.rss.getAll();
     var tableView = Ti.UI.createTableView({
-      data: data
+      data: []
     });
     win.add(tableView);
     
-    if (!data.length){
-      getRss();
-    }
+    app.ui.getRss(_url,_category,tableView);
     
     // List View Create
     tableView.addEventListener("click",function(evt){
@@ -280,10 +294,9 @@
               pb.value = e.progress;
             }
           });
-          //mp3.setRequestHeader('User-Agent','Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A537a Safari/419.3');
-          
           mp3.open('GET',link);
           mp3.send();
+          //mp3.setRequestHeader('User-Agent','Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A537a Safari/419.3');
         });
       }
       
