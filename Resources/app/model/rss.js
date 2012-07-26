@@ -14,7 +14,7 @@
     var rss = [];
     var db = Ti.Database.open("tvoa");
     var rows = db.execute('SELECT id, link, title, category, read, download, pubdate, created_at FROM rss where category = ? order by pubdate desc limit 50',category);
-    if (!rows){
+    if (!rows.rowCount){
       return rss;
     }
     while(rows.isValidRow()){
@@ -43,10 +43,10 @@
     var db = Ti.Database.open("tvoa");
     var rss;
     var rows = db.execute('SELECT * FROM rss where id = ?',pageid);
-    if (!rows){
+    if (!rows.rowCount){ 
       return;
     }
-    if (rows.isValidRow()){
+    while (rows.isValidRow()){
       rss = {
         id: rows.fieldByName('id'),
         link: rows.fieldByName('link'),
@@ -57,7 +57,7 @@
         created_at: rows.fieldByName('created_at'),
         body: rows.fieldByName('body')
       };
-      //rows.next();
+      rows.next();
     }
     rows.close();
     
@@ -73,7 +73,7 @@
     var now = (new Date).getTime();
     
     var rows = db.execute('SELECT * FROM rss where id = ?',rss.pageid);
-    if (!rows.getRowCount()){ 
+    if (!rows.rowCount){ 
       db.execute("INSERT INTO rss (id, link, title, category, read, download, pubdate, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         rss.pageid ,rss.link , rss.title, rss.category, 0, 0, rss.pubdate ,now);
     }
