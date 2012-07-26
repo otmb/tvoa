@@ -175,7 +175,14 @@
         });
         
         view1.add(startStopButton);
-        var i;
+        var i  = setInterval(function()
+        {
+          if (sound.playing)
+          {
+            slider.value = sound.getTime();
+          }
+        },500);
+        
         startStopButton.addEventListener("click",function() {
           if (sound.playing){
             sound.pause();
@@ -183,13 +190,6 @@
             sound.play();
             slider.max = sound.duration;
             slider.value = sound.getTime();
-            i  = setInterval(function()
-            {
-              if (sound.playing)
-              {
-                slider.value = sound.getTime();
-              }
-            },500);
           }
         });
         
@@ -216,7 +216,7 @@
         }
         view1.add(slider);
         
-        detailWin.addEventListener('close',function() {
+        view1.addEventListener('close',function() {
           sound.stop();
           clearInterval(i);
           if (Ti.Platform.osname === 'android')
