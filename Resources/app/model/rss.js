@@ -1,12 +1,15 @@
 (function(){
   app.rss = {};
   
+  //var db = Ti.Database.open("tvoa");
+  //db.close();
+  //db.remove();
+  
   var db = Ti.Database.open("tvoa");
   db.execute('CREATE TABLE IF NOT EXISTS rss(id INTEGER PRIMARY KEY, category TEXT, link TEXT, title TEXT, body TEXT,read INTEGER, download INTEGER, pubdate REAL,created_at REAL)');
   //db.execute('delete from rss');
   db.close();
   
-  // 
   app.rss.getAll = function(category){
     var rss = [];
     var db = Ti.Database.open("tvoa");
@@ -68,8 +71,12 @@
     
     var db = Ti.Database.open("tvoa");
     var now = (new Date).getTime();
-    db.execute("INSERT INTO rss (id, link, title, category, read, download, pubdate, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      rss.id ,rss.link , rss.title, rss.category, 0, 0, rss.pubdate ,now);
+    
+    var rows = db.execute('SELECT * FROM rss where id = ?',rss.pageid);
+    if (!rows.getRowCount()){ 
+      db.execute("INSERT INTO rss (id, link, title, category, read, download, pubdate, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        rss.pageid ,rss.link , rss.title, rss.category, 0, 0, rss.pubdate ,now);
+    }
     /*
     var rss = {
       id: db.lastInsertRowId,

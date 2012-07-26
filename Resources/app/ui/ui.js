@@ -44,8 +44,7 @@
         var pubdate = (new Date(item.pubDate)).getTime();
         var hash = {title: item.title, link: link, color: '#000', pageid: pageid, pubdate: pubdate, category: _category, hasChild: true};
         //tableView.appendRow(hash);
-        
-        if (pageid && !app.rss.get(pageid)){
+        if (pageid){
           app.rss.add(hash);
         }
       });
