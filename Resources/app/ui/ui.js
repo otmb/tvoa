@@ -212,14 +212,9 @@
         {
           sound.stop();
           clearInterval(i);
-          /*
-          if (Ti.Platform.osname === 'android')
-          {
-            sound.release();
-          }
-          */
         });
         if (Ti.Platform.osname === 'iphone'){
+           slider.max = sound.duration;
            slider.addEventListener('change', function(e) {
             if (e.value > sound.getTime() + 2 || e.value < sound.getTime() - 2 ){
               //sound.value = e.value;
@@ -231,13 +226,22 @@
         }
         view1.add(slider);
         
-        view1.addEventListener('close',function() {
+        sound_close = function(){
           sound.stop();
           clearInterval(i);
           if (Ti.Platform.osname === 'android')
           {
             sound.release();
           }
+        };
+        
+        // tab change
+        tab.addEventListener('blur',function() {
+          sound_close();
+        });
+        
+        detailWin.addEventListener('close',function() {
+          sound_close();
         });
       };
       
@@ -281,6 +285,7 @@
             alert("Page Loading Error.");
             return;
           }
+          //console.log(evt.rowData.link);
           
           var link = response.data.a.href;
           var mp3 = Ti.Network.createHTTPClient({
