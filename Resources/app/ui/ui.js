@@ -243,6 +243,9 @@
         detailWin.addEventListener('close',function() {
           sound_close();
         });
+        tableView.addEventListener('move',function() {
+          sound_close();
+        });
       };
       
       // mp3 download
