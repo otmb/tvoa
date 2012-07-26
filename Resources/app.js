@@ -17,6 +17,8 @@ if (Ti.version < 1.8 ) {
 */
 var app = {};
 
+var save_maxnum = 50;
+
 Ti.include(
   //"app/util.js",
   "app/ui/ui.js",
@@ -28,6 +30,8 @@ var console = {
     Ti.API.debug(JSON.stringify(msg, null, 2));
   }
 };
+// garbage collection
+app.rss.gc();
 
 var tabGroup = app.ui.createApplicationTabGroup();
 tabGroup.open();

@@ -7,11 +7,11 @@
     var tabGroup = Ti.UI.createTabGroup();
     
     //var tab1 = app.ui.createRssTab('All Zone' ,''         ,'http://learningenglish.voanews.com/rss/?count=50');
-    var tab1 = app.ui.createRssTab('World'    ,'World'    ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=957');
-    var tab2 = app.ui.createRssTab('USA'      ,'USA'      ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=958');
-    var tab3 = app.ui.createRssTab('Business' ,'Business' ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=956');
-    var tab4 = app.ui.createRssTab('Education','Education','http://learningenglish.voanews.com/rss/?count=50&zoneid=959');
-    var tab5 = app.ui.createRssTab('Health'   ,'Health'   ,'http://learningenglish.voanews.com/rss/?count=50&zoneid=955');
+    var tab1 = app.ui.createRssTab('World'    ,'World'    ,'http://learningenglish.voanews.com/rss/?zoneid=957&count='+save_maxnum);
+    var tab2 = app.ui.createRssTab('USA'      ,'USA'      ,'http://learningenglish.voanews.com/rss/?zoneid=958&count='+save_maxnum);
+    var tab3 = app.ui.createRssTab('Business' ,'Business' ,'http://learningenglish.voanews.com/rss/?zoneid=956&count='+save_maxnum);
+    var tab4 = app.ui.createRssTab('Education','Education','http://learningenglish.voanews.com/rss/?zoneid=959&count='+save_maxnum);
+    var tab5 = app.ui.createRssTab('Health'   ,'Health'   ,'http://learningenglish.voanews.com/rss/?zoneid=955&count='+save_maxnum);
     
     //var tab2 = app.ui.createRssTab('Q&A', 'http://developer.appcelerator.com/questions/feed/newest');
     tabGroup.addTab(tab1);

@@ -11,9 +11,10 @@
   db.close();
   
   app.rss.getAll = function(category){
+    
     var rss = [];
     var db = Ti.Database.open("tvoa");
-    var rows = db.execute('SELECT id, link, title, category, read, download, pubdate, created_at FROM rss where category = ? order by pubdate desc limit 50',category);
+    var rows = db.execute('SELECT id, link, title, category, read, download, pubdate, created_at FROM rss where category = ? order by pubdate desc limit '+save_maxnum,category);
     if (!rows.rowCount){
       return rss;
     }
@@ -74,7 +75,7 @@
     
     var rows = db.execute('SELECT * FROM rss where id = ?',rss.pageid);
     if (!rows.rowCount){ 
-      db.execute("INSERT INTO rss (id, link, title, category, read, download, pubdate, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      db.execute("INSERT OR REPLACE INTO rss (id, link, title, category, read, download, pubdate, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         rss.pageid ,rss.link , rss.title, rss.category, 0, 0, rss.pubdate ,now);
     }
     /*
@@ -103,6 +104,47 @@
     }
     param.push(pageid);
     db.execute("UPDATE rss set " + set.join(",") + " where id = ?",param);
+    db.close();
+  };
+  
+  app.rss.gc = function(pageid,hash){
+    var rss = [];
+    var db = Ti.Database.open("tvoa");
+    
+    var category = db.execute('SELECT count(category) as count,category FROM rss group by category');
+    if (!category.rowCount){
+      return;
+    }
+    console.log(category.rowCount);
+    
+    var soundDir;
+      
+    if (Ti.Platform.osname === 'android'){
+      soundDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'sound');
+    } else {
+      soundDir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'sound');
+    }
+    
+    while(category.isValidRow()){
+      //var rows = db.execute('SELECT count(*) FROM rss where category = ? group by category');
+      var cate = category.fieldByName('category');
+      if ( category.fieldByName('count') > save_maxnum){
+        
+        var rows = db.execute('SELECT id FROM rss where category = ? order by pubdate desc limit '+ save_maxnum +',100',cate);
+        while(rows.isValidRow()){
+          var id = rows.fieldByName('id');
+          db.execute('delete FROM rss where id = ?',id);
+          var filePath = Ti.Filesystem.getFile(soundDir.nativePath , id + ".mp3");
+          filePath.deleteFile();
+          rows.next();
+        }
+        rows.close();
+      }
+      
+      category.next();
+    }
+    category.close();
+    
     db.close();
   };
   
