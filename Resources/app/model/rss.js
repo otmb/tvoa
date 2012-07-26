@@ -3,6 +3,7 @@
   
   var db = Ti.Database.open("tvoa");
   db.execute('CREATE TABLE IF NOT EXISTS rss(id INTEGER PRIMARY KEY, category TEXT, link TEXT, title TEXT, body TEXT,read INTEGER, download INTEGER, pubdate REAL,created_at REAL)');
+  //db.execute('delete from rss');
   db.close();
   
   // 
