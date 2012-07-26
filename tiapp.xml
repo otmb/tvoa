@@ -14,7 +14,7 @@
         <target device="blackberry">false</target>
     </deployment-targets>
     <sdk-version>2.1.0.GA</sdk-version>
-    <id>tvoa.otmb.jp</id>
+    <id>jp.otmb.tvoa</id>
     <name>tvoa</name>
     <version>1.0</version>
     <publisher>manabu</publisher>
