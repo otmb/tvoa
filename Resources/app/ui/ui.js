@@ -172,13 +172,17 @@
         });
         app.ui.sound = sound;
         
-        var i  = setInterval(function()
-        {
-          if (sound.playing)
+        try {
+          var i  = setInterval(function()
           {
-            slider.value = sound.getTime();
-          }
-        },500);
+            if (sound.playing)
+            {
+              slider.value = sound.getTime();
+            }
+          },500);
+        } catch(error){
+          clearInterval(i);
+        }
         
         startStopButton.addEventListener("click",function() {
           if (sound.playing){
@@ -207,7 +211,6 @@
             sound.setTime(e.value);
           }
         });
-        
         sound_close = function(){
           sound.stop();
           clearInterval(i);
@@ -217,19 +220,28 @@
           }
         };
         
-        // tab change
-        tab.addEventListener('blur',function() {
-          sound_close();
-        });
-        
-        detailWin.addEventListener('close',function() {
-          sound_close();
-        });
-        tableView.addEventListener('move',function() {
-          sound_close();
-        });
+        if (Ti.Platform.osname === 'android'){
+          detailWin.addEventListener('android:back', function(){
+            sound_close();
+            detailWin.close();
+          });
+        } else {
+          
+          // tab change
+          tab.addEventListener('blur',function() {
+            sound_close();
+          });
+          
+          detailWin.addEventListener('close',function() {
+            sound_close();
+          });
+          
+          tableView.addEventListener('move',function() {
+            sound_close();
+          });
+        }
       };
-      
+     
       // mp3 download
       var soundDir;
       
