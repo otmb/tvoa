@@ -84,24 +84,12 @@
       // before sound remove
       var sound = app.ui.sound;
       
-      if (Ti.Platform.osname === 'iphone'){
-        var slider = Ti.UI.createSlider({
-          top: 50,
-          min: 0,
-          //max: 100,
-          width: '90%'
-        });
-      } else {
-        var slider = Titanium.UI.createProgressBar({
-          top: 50,
-          width:"90%",
-          height:'auto',
-          min:0,
-          //touchEnabled: true,
-          style:Ti.UI.iPhone.ProgressBarStyle.PLAIN
-        });
-      }
-      
+      var slider = Ti.UI.createSlider({
+        top: 50,
+        min: 0,
+        //max: 100,
+        width: '90%'
+      });
       if (sound){
         sound.stop();
       }
@@ -215,15 +203,17 @@
         });
         if (Ti.Platform.osname === 'iphone'){
            slider.max = sound.duration;
-           slider.addEventListener('change', function(e) {
-            if (e.value > sound.getTime() + 2 || e.value < sound.getTime() - 2 ){
-              //sound.value = e.value;
-              sound.setTime(e.value);
-              //console.log("slide: " + e.value);
-              //console.log("sound: " + sound.getTime());
-            }
-          });
         }
+        var range = (Ti.Platform.osname === 'android') ? 2000 : 2;
+        
+        slider.addEventListener('change', function(e) {
+          if (e.value > sound.getTime() + range || e.value < sound.getTime() - range ){
+            //console.log("slide1: " + e.value);
+            //console.log("sound1: " + sound.getTime());
+            sound.setTime(e.value);
+          }
+        });
+        
         view1.add(slider);
         
         sound_close = function(){

@@ -16,7 +16,7 @@
     <sdk-version>2.1.0.GA</sdk-version>
     <id>jp.otmb.tvoa</id>
     <name>tvoa</name>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <publisher>manabu</publisher>
     <url>http://d.hatena.ne.jp/o2mana</url>
     <description>Titanium Voice of America English News</description>
@@ -45,7 +45,9 @@
           <mode>audio</mode>
          </backgroundModes>
     </iphone>
-    <android xmlns:android="http://schemas.android.com/apk/res/android"/>
+    <android xmlns:android="http://schemas.android.com/apk/res/android">
+      <manifest android:versionCode="2" android:versionName="1.0.1"></manifest>
+    </android>
     <mobileweb>
         <precache/>
         <splash>
