@@ -28,7 +28,7 @@
     
     var query = String.format("select * from rss where url = '%s'",_url);
     Ti.Yahoo.yql(query,function(response){
-      if (response.success === false || !response.data.item){
+      if (response.success === false || !response.data.item || typeof response.data.item === "undefined"){
         // get rss with database
         var data = app.rss.getAll(_category);
         tableView.setData(data);
@@ -84,12 +84,6 @@
       // before sound remove
       var sound = app.ui.sound;
       
-      var slider = Ti.UI.createSlider({
-        top: 50,
-        min: 0,
-        //max: 100,
-        width: '90%'
-      });
       if (sound){
         sound.stop();
       }
@@ -101,52 +95,43 @@
       var view2 = Ti.UI.createView({
         //backgroundColor: 'blue'
       });
-      
+     
       //alert(event.rowData.title);
       var detailWin = Ti.UI.createWindow({
         title: evt.rowData.title,
         backgroundColor: "#fff"
       });
       
-      textScroll = function(text){
-        var scrollView = Titanium.UI.createScrollView({
-          contentWidth:'auto',
-          contentHeight:'auto',
-          bottom: 0,
-          showVerticalScrollIndicator:true,
-          showHorizontalScrollIndicator:true
-        });
-        if (Ti.Platform.osname === 'iphone')
-        {
-          scrollView.top = 80;
-        } else {
-          scrollView.top = 120;
-        }
-        
-        var l1 = Titanium.UI.createLabel({
-          text: text,
-          width:"98%",
-          height:"auto",
-          top:0,
-          color:'#000',
-          textAlign:'left'
-        });
-        scrollView.add(l1);
-        //scrollView.scrollTo("auto", "auto");
-        view1.add(scrollView);
-      };
+      var scrollView = Titanium.UI.createScrollView({
+        contentWidth:'auto',
+        contentHeight:'auto',
+        bottom: 0,
+        showVerticalScrollIndicator:true,
+        showHorizontalScrollIndicator:true
+      });
+      
+      scrollView.top = (Ti.Platform.osname === 'iphone') ? 80 : 120;
+      var textlabel = Titanium.UI.createLabel({
+        width:"98%",
+        height:"auto",
+        top:0,
+        color:'#000',
+        textAlign:'left'
+      });
+      scrollView.add(textlabel);
+      view1.add(scrollView);
       
       // html Scraping
       var rss = app.rss.get(evt.rowData.pageid);
       if (rss && rss.body){
-        textScroll(rss.body);
+        textlabel.text = rss.body;
       } else {
         // text download
         var xpath = '//div[@class="body_text"]';
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         //console.log(query);
         Ti.Yahoo.yql(query,function(response){
-          if (response.success === false || !response.data.div){
+          if (response.success === false || !response.data.div || typeof response.data.div === "undefined"){
             alert("Page Loading Error.");
             return;
           }
@@ -158,17 +143,18 @@
           //console.log(contents);
           var text = evt.rowData.title + "\n\n" + contents;
           app.rss.update(evt.rowData.pageid,{ body: text , download: 1 });      
-          textScroll(text);
+          textlabel.text = text;
         });
       }
      
       //Ti.API.info('directoryListing = ' + filePath.getParent().getDirectoryListing());
-      createSound = function(filePath) {
-        sound = Ti.Media.createSound({
-          url: filePath,
-          allowBackground: true
+      createSound = function(filePath,view) {
+        var slider = Ti.UI.createSlider({
+          top: 50,
+          min: 0,
+          //max: 100,
+          width: '90%'
         });
-        app.ui.sound = sound;
         
         var startStopButton = Ti.UI.createButton({
           title:'Start/Stop',
@@ -177,7 +163,15 @@
           height:40
         });
         
-        view1.add(startStopButton);
+        view.add(startStopButton);
+        view.add(slider);
+           
+        sound = Ti.Media.createSound({
+          url: filePath,
+          allowBackground: true
+        });
+        app.ui.sound = sound;
+        
         var i  = setInterval(function()
         {
           if (sound.playing)
@@ -213,8 +207,6 @@
             sound.setTime(e.value);
           }
         });
-        
-        view1.add(slider);
         
         sound_close = function(){
           sound.stop();
@@ -252,7 +244,7 @@
       var filePath = Ti.Filesystem.getFile(soundDir.nativePath , evt.rowData.pageid + ".mp3");
       console.log("SoundFile path is: " + filePath.resolve());
       if (filePath.exists()){
-        createSound(filePath.nativePath);
+        createSound(filePath.nativePath,view1);
       } else {
         // progress bar
         var pb = Titanium.UI.createProgressBar({
@@ -273,7 +265,7 @@
         var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         Ti.Yahoo.yql(query,function(response){
-          if (response.success === false || !response.data.a){
+          if (response.success === false || !response.data.a || response.data.a === "undefined"){
             pb.hide();
             alert("Page Loading Error.");
             return;
@@ -285,7 +277,7 @@
             onload: function() {
                 pb.hide();
                 filePath.write(this.responseData);
-                createSound(filePath.nativePath);
+                createSound(filePath.nativePath,view1);
             },
             ondatastream: function(e){
               //console.log("progres: "+e.progress);

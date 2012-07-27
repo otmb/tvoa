@@ -46,7 +46,7 @@
          </backgroundModes>
     </iphone>
     <android xmlns:android="http://schemas.android.com/apk/res/android">
-      <manifest android:versionCode="2" android:versionName="1.0.1"></manifest>
+      <manifest android:versionCode="3" android:versionName="1.0.2"></manifest>
     </android>
     <mobileweb>
         <precache/>
