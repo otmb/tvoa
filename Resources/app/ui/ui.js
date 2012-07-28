@@ -28,7 +28,7 @@
     
     var query = String.format("select * from rss where url = '%s'",_url);
     Ti.Yahoo.yql(query,function(response){
-      if (response.success === false || !response.data.item || typeof response.data.item === "undefined"){
+      if (response.success === false || !response.data || typeof response.data.item === "undefined"){
         // get rss with database
         var data = app.rss.getAll(_category);
         tableView.setData(data);
@@ -131,7 +131,7 @@
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         //console.log(query);
         Ti.Yahoo.yql(query,function(response){
-          if (response.success === false || !response.data.div || typeof response.data.div === "undefined"){
+          if (response.success === false || !response.data || typeof response.data.div === "undefined"){
             alert("Page Loading Error.");
             return;
           }
@@ -277,7 +277,7 @@
         var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         Ti.Yahoo.yql(query,function(response){
-          if (response.success === false || !response.data.a || response.data.a === "undefined"){
+          if (response.success === false || !response.data || response.data.a === "undefined"){
             pb.hide();
             alert("Page Loading Error.");
             return;
@@ -290,6 +290,11 @@
                 pb.hide();
                 filePath.write(this.responseData);
                 createSound(filePath.nativePath,view1);
+                mp3.onload = null;
+                mp3.onreadystatechange = null;
+                mp3.ondatastream = null;
+                mp3.onerror = null;
+                mp3 = null;  
             },
             ondatastream: function(e){
               //console.log("progres: "+e.progress);
