@@ -16,11 +16,12 @@
   };
   
   app.util.getYql = function(url,xpath,option){
+    
     var query = String.format("select * from html where url = '%s' and xpath='%s'",url,xpath);
     console.log(query);
     Ti.Yahoo.yql(query,function(response){
       if (response.success === false || !response.data){
-        throw "error:Page Loading Error.";
+        option.callback(false,option);
       }
       option.callback(response.data,option);
     });

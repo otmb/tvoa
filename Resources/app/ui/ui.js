@@ -123,40 +123,35 @@
       scrollView.add(textlabel);
       view1.add(scrollView);
       
+      // html Scraping
+      var rss = app.rss.get(evt.rowData.pageid);
+      if (rss && rss.body){
+        textlabel.text = rss.body;
+      } else {
+        var url = evt.rowData.link;
+        var xpath = '//div[@class="body_text"]';
+        app.util.getYql(url,xpath,{
+          callback: app.ui.getContens,
+          title: evt.rowData.title,
+          pageid: evt.rowData.pageid,
+          textlabel: textlabel
+        });
+      }
+      
       // mp3 download
       var soundDir = app.util.getPath('sound');
       var filePath = Ti.Filesystem.getFile(soundDir , evt.rowData.pageid + ".mp3");
       console.log("SoundFile path is: " + filePath.resolve());
-      
-      // html Scraping
-      var rss = app.rss.get(evt.rowData.pageid);
-     
-      try {
-        if (rss && rss.body){
-          textlabel.text = rss.body;
-        } else {
-          var url = evt.rowData.link;
-          var xpath = '//div[@class="body_text"]';
-          app.util.getYql(url,xpath,{
-            callback: app.ui.getContens,
-            title: evt.rowData.title,
-            pageid: evt.rowData.pageid,
-            textlabel: textlabel
-          });
-        }
-        if (filePath.exists()){
-          console.log();
-          app.ui.createSound(filePath.nativePath,view1);
-        } else {
-          var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
-          app.util.getYql(url,xpath,{
-            callback: app.ui.getSound,
-            file: filePath,
-            view: view1
-          });
-        }
-      } catch (e) {
-        alert(e.message);
+      if (filePath.exists()){
+        console.log();
+        app.ui.createSound(filePath.nativePath,view1);
+      } else {
+        var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
+        app.util.getYql(url,xpath,{
+          callback: app.ui.getSound,
+          file: filePath,
+          view: view1
+        });
       }
       
       if (Ti.Platform.osname === 'android'){
@@ -210,6 +205,11 @@
   
   // html english text view
   app.ui.getContens = function(data,option){
+    if (!data){
+       option.textlabel.text = "Page Loading Error.";
+       return;
+    }
+    
     var contents = data.div.p.content;
     contents = contents.replace(/  /g,"");
     contents = contents.replace(/\n\n/g,"\n");
@@ -221,8 +221,13 @@
   
   // mp3 download and progressbar
   app.ui.getSound = function(data,option){
-    
     var view = option.view;
+    
+    if (!data){
+       alert("mp3 Loading Error.");
+       return;
+    }
+    
     // progress bar
     var pb = Titanium.UI.createProgressBar({
       top:10,
@@ -332,6 +337,7 @@
   app.ui.sound_close = function(){
     var sound = app.ui.sound;
     var interval =  app.ui.interval;
+    if (!sound) return;
     sound.stop();
     clearInterval(interval);
     if (Ti.Platform.osname === 'android')
