@@ -116,13 +116,7 @@
       return;
     }
     
-    var soundDir;
-      
-    if (Ti.Platform.osname === 'android'){
-      soundDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'sound');
-    } else {
-      soundDir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'sound');
-    }
+    var soundDir = app.util.getPath('sound');
     
     while(category.isValidRow()){
       //var rows = db.execute('SELECT count(*) FROM rss where category = ? group by category');

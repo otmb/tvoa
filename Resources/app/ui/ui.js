@@ -1,5 +1,7 @@
 (function(){
   app.ui = {};
+  app.ui.sound;
+  app.ui.interval;
   
   app.ui.createApplicationTabGroup = function(){
     Ti.UI.setBackgroundColor('#000');
@@ -28,7 +30,7 @@
     
     var query = String.format("select * from rss where url = '%s'",_url);
     Ti.Yahoo.yql(query,function(response){
-      if (response.success === false || !response.data || typeof response.data.item === "undefined"){
+      if (response.success === false || !response.data){
         // get rss with database
         var data = app.rss.getAll(_category);
         tableView.setData(data);
@@ -121,190 +123,59 @@
       scrollView.add(textlabel);
       view1.add(scrollView);
       
+      // mp3 download
+      var soundDir = app.util.getPath('sound');
+      var filePath = Ti.Filesystem.getFile(soundDir , evt.rowData.pageid + ".mp3");
+      console.log("SoundFile path is: " + filePath.resolve());
+      
       // html Scraping
       var rss = app.rss.get(evt.rowData.pageid);
-      if (rss && rss.body){
-        textlabel.text = rss.body;
-      } else {
-        // text download
-        var xpath = '//div[@class="body_text"]';
-        var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
-        //console.log(query);
-        Ti.Yahoo.yql(query,function(response){
-          if (response.success === false || !response.data || typeof response.data.div === "undefined"){
-            alert("Page Loading Error.");
-            return;
-          }
-          // text scroll view add
-          //console.log(response);
-          var contents = response.data.div.p.content;
-          contents = contents.replace(/  /g,"");
-          contents = contents.replace(/\n\n/g,"\n");
-          //console.log(contents);
-          var text = evt.rowData.title + "\n\n" + contents;
-          app.rss.update(evt.rowData.pageid,{ body: text , download: 1 });      
-          textlabel.text = text;
-        });
-      }
      
-      //Ti.API.info('directoryListing = ' + filePath.getParent().getDirectoryListing());
-      createSound = function(filePath,view) {
-        var slider = Ti.UI.createSlider({
-          top: 50,
-          min: 0,
-          //max: 100,
-          width: '90%'
-        });
-        
-        var startStopButton = Ti.UI.createButton({
-          title:'Start/Stop',
-          top: 10,
-          width:200,
-          height:40
-        });
-        
-        view.add(startStopButton);
-        view.add(slider);
-           
-        sound = Ti.Media.createSound({
-          url: filePath,
-          allowBackground: true
-        });
-        app.ui.sound = sound;
-        
-        try {
-          var i  = setInterval(function()
-          {
-            if (sound.playing)
-            {
-              slider.value = sound.getTime();
-            }
-          },500);
-        } catch(error){
-          clearInterval(i);
-        }
-        
-        startStopButton.addEventListener("click",function() {
-          if (sound.playing){
-            sound.pause();
-          } else {
-            sound.play();
-            slider.max = sound.duration;
-            slider.value = sound.getTime();
-          }
-        });
-        
-        sound.addEventListener('complete', function()
-        {
-          sound.stop();
-          clearInterval(i);
-        });
-        if (Ti.Platform.osname === 'iphone'){
-           slider.max = sound.duration;
-        }
-        var range = (Ti.Platform.osname === 'android') ? 2000 : 2;
-        
-        slider.addEventListener('change', function(e) {
-          if (e.value > sound.getTime() + range || e.value < sound.getTime() - range ){
-            //console.log("slide1: " + e.value);
-            //console.log("sound1: " + sound.getTime());
-            sound.setTime(e.value);
-          }
-        });
-        sound_close = function(){
-          sound.stop();
-          clearInterval(i);
-          if (Ti.Platform.osname === 'android')
-          {
-            sound.release();
-          }
-        };
-        
-        if (Ti.Platform.osname === 'android'){
-          detailWin.addEventListener('android:back', function(){
-            sound_close();
-            detailWin.close();
-          });
+      try {
+        if (rss && rss.body){
+          textlabel.text = rss.body;
         } else {
-          
-          // tab change
-          tab.addEventListener('blur',function() {
-            sound_close();
-          });
-          
-          detailWin.addEventListener('close',function() {
-            sound_close();
-          });
-          
-          tableView.addEventListener('move',function() {
-            sound_close();
+          var url = evt.rowData.link;
+          var xpath = '//div[@class="body_text"]';
+          app.util.getYql(url,xpath,{
+            callback: app.ui.getContens,
+            title: evt.rowData.title,
+            pageid: evt.rowData.pageid,
+            textlabel: textlabel
           });
         }
-      };
-     
-      // mp3 download
-      var soundDir;
+        if (filePath.exists()){
+          console.log();
+          app.ui.createSound(filePath.nativePath,view1);
+        } else {
+          var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
+          app.util.getYql(url,xpath,{
+            callback: app.ui.getSound,
+            file: filePath,
+            view: view1
+          });
+        }
+      } catch (e) {
+        alert(e.message);
+      }
       
       if (Ti.Platform.osname === 'android'){
-        soundDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'sound');
-      } else {
-        soundDir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'sound');
-      }
-      if (!soundDir.exists()) {
-        soundDir.createDirectory();
-      }
-      var filePath = Ti.Filesystem.getFile(soundDir.nativePath , evt.rowData.pageid + ".mp3");
-      console.log("SoundFile path is: " + filePath.resolve());
-      if (filePath.exists()){
-        createSound(filePath.nativePath,view1);
-      } else {
-        // progress bar
-        var pb = Titanium.UI.createProgressBar({
-          top:10,
-          width:"90%",
-          height:'auto',
-          min:0,
-          max:1,
-          value:0,
-          color:'#000',
-          message:'Downloading',
-          font:{fontSize:20, fontWeight:'bold'},
-          style:Titanium.UI.iPhone.ProgressBarStyle.PLAIN,
+        detailWin.addEventListener('android:back', function(){
+          app.ui.sound_close();
+          detailWin.close();
         });
-        view1.add(pb);
-        pb.show();
+      } else {
+        // tab change
+        tab.addEventListener('blur',function() {
+          app.ui.sound_close();
+        });
         
-        var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
-        var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
-        Ti.Yahoo.yql(query,function(response){
-          if (response.success === false || !response.data || response.data.a === "undefined"){
-            pb.hide();
-            alert("Page Loading Error.");
-            return;
-          }
-          console.log(evt.rowData.link);
-          
-          var link = response.data.a.href;
-          var mp3 = Ti.Network.createHTTPClient({
-            onload: function() {
-                pb.hide();
-                filePath.write(this.responseData);
-                createSound(filePath.nativePath,view1);
-                mp3.onload = null;
-                mp3.onreadystatechange = null;
-                mp3.ondatastream = null;
-                mp3.onerror = null;
-                mp3 = null;  
-            },
-            ondatastream: function(e){
-              //console.log("progres: "+e.progress);
-              //pb.max = e.getResponseHeader("Content-Length");
-              pb.value = e.progress;
-            }
-          });
-          mp3.open('GET',link);
-          mp3.send();
-          //mp3.setRequestHeader('User-Agent','Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A537a Safari/419.3');
+        detailWin.addEventListener('close',function() {
+          app.ui.sound_close();
+        });
+        
+        tableView.addEventListener('move',function() {
+          app.ui.sound_close();
         });
       }
       
@@ -329,7 +200,6 @@
           view2.add(webview);
           app.ui.webview = 1;
         }
-        
       });
       tab.open(detailWin);
       
@@ -337,4 +207,137 @@
     
     return tab;
   };
+  
+  // html english text view
+  app.ui.getContens = function(data,option){
+    var contents = data.div.p.content;
+    contents = contents.replace(/  /g,"");
+    contents = contents.replace(/\n\n/g,"\n");
+    
+    var text  = option.title + "\n\n" + contents;
+    app.rss.update(option.pageid,{ body: text , download: 1 });
+    option.textlabel.text = text;
+  };
+  
+  // mp3 download and progressbar
+  app.ui.getSound = function(data,option){
+    
+    var view = option.view;
+    // progress bar
+    var pb = Titanium.UI.createProgressBar({
+      top:10,
+      width:"90%",
+      height:'auto',
+      min:0,
+      max:1,
+      value:0,
+      color:'#000',
+      message:'Downloading',
+      font:{fontSize:20, fontWeight:'bold'},
+      style:Titanium.UI.iPhone.ProgressBarStyle.PLAIN,
+    });
+    view.add(pb);
+    pb.show();
+        
+    var link = data.a.href;
+    var filePath = option.file;
+    var mp3 = Ti.Network.createHTTPClient({
+      onload: function() {
+        pb.hide();
+        filePath.write(this.responseData);
+        app.ui.createSound(filePath.nativePath,view);
+        mp3.onload = null;
+        mp3.onreadystatechange = null;
+        mp3.ondatastream = null;
+        mp3.onerror = null;
+        mp3 = null;  
+      },
+      ondatastream: function(e){
+        pb.value = e.progress;
+      }
+    });
+    mp3.open('GET',link);
+    mp3.send(); 
+  }
+  
+  // mp3 sound view
+  app.ui.createSound = function(filePath,view) {
+    var sound = app.ui.sound;
+    var interval =  app.ui.interval;
+    var slider = Ti.UI.createSlider({
+      top: 50,
+      min: 0,
+      //max: 100,
+      width: '90%'
+    });
+    
+    var startStopButton = Ti.UI.createButton({
+      title:'Start/Stop',
+      top: 10,
+      width:200,
+      height:40
+    });
+    
+    view.add(startStopButton);
+    view.add(slider);
+    
+    sound = Ti.Media.createSound({
+      url: filePath,
+      allowBackground: true
+    });
+    app.ui.sound = sound;
+    
+    try {
+      interval  = setInterval(function()
+      {
+        if (sound.playing)
+        {
+          slider.value = sound.getTime();
+        }
+      },500);
+      app.ui.interval = interval;
+    } catch(error){
+      clearInterval(i);
+    }
+    
+    startStopButton.addEventListener("click",function() {
+      if (sound.playing){
+        sound.pause();
+      } else {
+        sound.play();
+        slider.max = sound.duration;
+        slider.value = sound.getTime();
+      }
+    });
+    
+    sound.addEventListener('complete', function()
+    {
+      sound.stop();
+      clearInterval(interval);
+    });
+    if (Ti.Platform.osname === 'iphone'){
+       slider.max = sound.duration;
+    }
+    var range = (Ti.Platform.osname === 'android') ? 2000 : 2;
+    
+    slider.addEventListener('change', function(e) {
+      if (e.value > sound.getTime() + range || e.value < sound.getTime() - range ){
+        //console.log("slide1: " + e.value);
+        //console.log("sound1: " + sound.getTime());
+        sound.setTime(e.value);
+      }
+    });
+  }
+  
+  app.ui.sound_close = function(){
+    var sound = app.ui.sound;
+    var interval =  app.ui.interval;
+    sound.stop();
+    clearInterval(interval);
+    if (Ti.Platform.osname === 'android')
+    {
+      sound.release();
+    }
+  };
+  
 })();

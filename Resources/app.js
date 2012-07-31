@@ -20,7 +20,7 @@ var app = {};
 var save_maxnum = 50;
 
 Ti.include(
-  //"app/util.js",
+  "app/util.js",
   "app/ui/ui.js",
   "app/model/rss.js"
 );
