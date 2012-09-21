@@ -274,7 +274,9 @@
         view1.add(pb);
         pb.show();
         
-        var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
+        //console.log(evt.rowData.link);
+        //var xpath = '//li/a[contains(text(), \"Listen\")]/@href';
+        var xpath='//ul[@class=\"multimedia_elements\"]/li/a/@href';
         var query = String.format("select * from html where url = '%s' and xpath='%s'",evt.rowData.link,xpath);
         Ti.Yahoo.yql(query,function(response){
           if (response.success === false || !response.data || response.data.a === "undefined"){
@@ -282,7 +284,7 @@
             alert("Page Loading Error.");
             return;
           }
-          console.log(evt.rowData.link);
+          //console.log(evt.rowData.link);
           
           var link = response.data.a.href;
           var mp3 = Ti.Network.createHTTPClient({
